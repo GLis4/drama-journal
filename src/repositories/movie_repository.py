@@ -1,4 +1,5 @@
 from src.models.movie_model import Movie
+import datetime as date
 
 
 class MovieRepository():
