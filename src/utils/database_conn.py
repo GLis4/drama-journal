@@ -11,7 +11,7 @@ engine = create_engine(
 # Criação do sessionmaker (sem global)
 SessionLocal = sessionmaker(
     autocommit=False,
-    autoflush=False,
+    autoflush=True,
     bind=engine
 )
 
