@@ -9,8 +9,8 @@ movie_bp = Blueprint('movies', __name__, url_prefix='/api/movie')
 @movie_bp.route('/', methods=['GET'])
 def find_all():
     with get_db() as db:
-        MovieService(db).find_all()
-        return jsonify('GET Movie'), 200
+        response = MovieService(db).find_all()
+        return jsonify(response), 200
 
 @movie_bp.route('/', methods=['POST'])
 def create():

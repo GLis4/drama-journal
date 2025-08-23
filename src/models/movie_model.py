@@ -13,3 +13,7 @@ class Movie(Base):
     duration = Column(Integer)
     rate_id = Column(Integer)
     studio = Column(VARCHAR(250))
+    status = Column(Integer, nullable=False)
+    
+    def serialize(self):
+        return  { column.name: getattr(self, column.name) for column in self.__table__.columns}

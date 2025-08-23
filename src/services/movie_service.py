@@ -1,3 +1,4 @@
+from ..dtos.movie_dto import MovieDto
 from ..models.movie_model import Movie
 from src.repositories.movie_repository import MovieRepository
 from datetime import datetime as date
@@ -7,8 +8,10 @@ class MovieService:
         self.repo = MovieRepository(db)
 
     def find_all(self):
-        return self.repo.get_all_movies()
-    
+        movies = self.repo.get_all_movies()
+        movies_response = [MovieDto(**movie.serialize()).model_dump() for movie in movies]
+        return movies_response
+   
     def create(self, movie_data):
         movie_data['release_date'] = date.strptime(movie_data.get('release_date'), '%Y-%m-%d')
         movie = Movie(**movie_data)

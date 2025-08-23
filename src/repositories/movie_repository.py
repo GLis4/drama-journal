@@ -8,7 +8,7 @@ class MovieRepository():
         self.db = db
 
     def get_all_movies(self):
-        return self.db.query(Movie).all()
+        return self.db.query(Movie).where(Movie.status==1).all()
 
     def update_entity(self, movie_id, data):
         return self.db.execute(update(Movie).where(Movie.id==movie_id).values(**data))
