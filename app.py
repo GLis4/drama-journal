@@ -1,10 +1,16 @@
 from flask import Flask
-from src.controller.movie_controller import movie_bp
+from src.controllers.movie_controller import movie_bp
 
 """ An API REST build to create, read, update and/or delete movies and series
  from a database"""
 
-app = Flask(__name__)
-app.register_blueprint(movie_bp)
-print(movie_bp)
-app.run(debug=True)
+
+def create_app():
+	app = Flask(__name__)
+	app.register_blueprint(movie_bp)
+	return app
+
+
+if __name__ == "__main__":
+	app = create_app()
+	app.run(debug=True)

@@ -1,36 +1,38 @@
-from ..dtos.movie_dto import MovieDto
+from ..services.service import BaseService
+from ..dtos.movie_dto import MovieDto, MovieRequestDto
 from ..models.movie_model import Movie
 from src.repositories.movie_repository import MovieRepository
-from datetime import datetime as date
 
-class MovieService:
+class MovieService(BaseService[Movie, MovieRepository]):
     def __init__(self, db):
-        self.repo = MovieRepository(db)
-
+        super().__init__(Movie, MovieRepository(db))
     def find_all(self):
-        movies = self.repo.get_all_movies()
-        movies_response = [MovieDto(**movie.serialize()).model_dump() for movie in movies]
-        return movies_response
+        movies = self.repository.get_all_movies()
+        return [self._to(movie).model_dump() for movie in movies], 200
    
-    def create(self, movie_data):
-        movie_data['release_date'] = date.strptime(movie_data.get('release_date'), '%Y-%m-%d')
-        movie = Movie(**movie_data)
-        self.repo.db.add(movie)
-        return movie
+    def create(self, movie_data: MovieRequestDto):
+        movie = self.repository.db.add(Movie(**movie_data.model_dump()))
+        return self._to(movie), 201
 
     def update(self, movie_id, movie_data):
-        movie = self.repo.get_by_id(movie_id)
-        if not movie:
-            raise ValueError(f"Movie with id {movie_id} not found")
-
-        movie = self.repo.update_entity(movie_id, dict(movie_data))
-        return movie.__dict__
+        self._find(movie_id)
+        movie = self.repository.update_entity(movie_id, dict(movie_data))
+        return self._to(movie).model_dump(), 200
 
     def find(self, movie_id):
-        movie = self.repo.get_by_id(movie_id)
+        movie = self._find(movie_id)
+        return self._to(movie)
+
+    def delete(self, movie_id):
+        self.repository.update_entity(movie_id, {Movie.status: 0})
+        return None, 204
+
+    def _to(self, movie: Movie) -> MovieDto:
+        return MovieDto(*movie.serialize())
+
+    def _find(self, movie_id) -> Movie:
+        movie = self.repository.get_by_id(movie_id)
         if not movie:
-            raise ValueError(f"Movie with id {movie_id} not found")
-        return {
-            "title": movie.title,
-            "id": movie.id
-            }
+            return {"error":"Movie {movie_id} not found"}, 404
+        return movie.model_dump()
+    
