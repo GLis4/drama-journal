@@ -1,3 +1,4 @@
+import stat
 from ..services.service import BaseService
 from ..dtos.movie_dto import MovieDto, MovieRequestDto
 from ..models.movie_model import Movie
@@ -15,24 +16,24 @@ class MovieService(BaseService[Movie, MovieRepository]):
         return self._to(movie), 201
 
     def update(self, movie_id, movie_data):
-        self._find(movie_id)
+        movie = self.repository.get_by_id(movie_id)
+        if not movie:
+            return {"error":"Movie {movie_id} not found"}, 404
         movie = self.repository.update_entity(movie_id, dict(movie_data))
         return self._to(movie).model_dump(), 200
 
     def find(self, movie_id):
-        movie = self._find(movie_id)
-        return self._to(movie)
+        movie = self.repository.get_by_id(movie_id)
+        if not movie:
+            return {"error":"Movie {movie_id} not found"}, 404
+        return self._to(movie), 200
 
     def delete(self, movie_id):
+        _, status = self._find(movie_id)
         self.repository.update_entity(movie_id, {Movie.status: 0})
-        return None, 204
+        return None, status
 
     def _to(self, movie: Movie) -> MovieDto:
         return MovieDto(*movie.serialize())
 
-    def _find(self, movie_id) -> Movie:
-        movie = self.repository.get_by_id(movie_id)
-        if not movie:
-            return {"error":"Movie {movie_id} not found"}, 404
-        return movie.model_dump()
     
